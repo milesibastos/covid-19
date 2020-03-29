@@ -1,6 +1,8 @@
 const axios = require('axios').default
 const get = require('lodash/get')
 
+axios.defaults.baseURL = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/`
+
 module.exports = (req, res) => {
   const { token, ...query } = req.query
   const from = get(req, 'body.message.from', {})
@@ -11,12 +13,7 @@ module.exports = (req, res) => {
   switch (text) {
     case '/start':
       const reply = { chat_id: from.id, text: 'welcome!' }
-      axios.post('/sendMessage', reply)
-      res.json({
-        body: req.body,
-        query: query,
-        cookies: req.cookies
-      })
+      axios.post('/sendMessage', reply).then(({ data }) => res.json({ ...data }))
       break
 
     default:
