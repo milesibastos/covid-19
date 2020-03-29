@@ -1,7 +1,7 @@
 const axios = require('axios').default
 const merge = require('lodash/merge')
 const set = require('lodash/set')
-const api = require('./[token]')
+const api = require('../telegram/[token]')
 
 jest.mock('axios')
 
