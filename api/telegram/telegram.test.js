@@ -30,7 +30,14 @@ test('token not match', () => {
 
 test('token should be valid', () => {
   process.env.TELEGRAM_TOKEN = 'foo:bar'
-  const req = { query: { token: 'foo:bar' } }
+  const req = {
+    query: { token: 'foo:bar' },
+    body: {
+      message: {
+        text: '/start'
+      }
+    }
+  }
   const res = { json: jest.fn() }
   api(req, res)
   expect(res.json).toHaveBeenCalled()
@@ -61,4 +68,23 @@ test('should reply welcome on /start', () => {
   api(req, res)
   expect(res.json).toHaveBeenCalled()
   expect(axios.post).toHaveBeenCalledWith('/sendMessage', reply)
+})
+
+test('should reply command not found', () => {
+  process.env.TELEGRAM_TOKEN = 'foo:bar'
+  // axios.get.mockResolvedValue(reply)
+  axios.post.mockImplementation(() => jest.fn())
+  const req = {
+    query: { token: 'foo:bar' },
+    body: {
+      message: {
+        text: '/command-not-found'
+      }
+    }
+  }
+  const res = { json: jest.fn() }
+
+  expect(() => {
+    api(req, res)
+  }).toThrowError(/command not found/)
 })
