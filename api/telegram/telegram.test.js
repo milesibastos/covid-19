@@ -1,10 +1,26 @@
 const axios = require('axios').default
+const merge = require('lodash/merge')
+const set = require('lodash/set')
 const api = require('./[token]')
 
 jest.mock('axios')
 
+const req = {
+  query: { token: 'foo:bar' },
+  body: {
+    message: {
+      from: {
+        id: 42, // chat_id (reply to it)
+        language_code: 'en'
+      },
+      text: '/start'
+    }
+  }
+}
+
 beforeEach(() => {
   jest.restoreAllMocks()
+  process.env.TELEGRAM_TOKEN = 'foo:bar'
 })
 
 test('should be a function', () => {
@@ -13,76 +29,39 @@ test('should be a function', () => {
 
 test('token is required', () => {
   const req = { query: {} }
-  const res = { json: jest.fn }
-  expect(() => {
-    api(req, res)
-  }).toThrowError(/token is required/)
+
+  expect(() => api(req)).toThrowError(/token is required/)
 })
 
 test('token not match', () => {
-  process.env.TELEGRAM_TOKEN = 'foo'
-  const req = { query: { token: 'bar' } }
-  const res = { json: jest.fn() }
-  expect(() => {
-    api(req, res)
-  }).toThrowError(/token not match/)
+  const req = { query: { token: 'foo' } }
+
+  expect(() => api(req)).toThrowError(/token not match/)
 })
 
 test('token should be valid', () => {
-  process.env.TELEGRAM_TOKEN = 'foo:bar'
-  axios.post.mockResolvedValue({ response: {} })
-  const req = {
-    query: { token: 'foo:bar' },
-    body: {
-      message: {
-        text: '/start'
-      }
-    }
-  }
+  axios.post.mockResolvedValue({})
   const res = { json: jest.fn() }
+
   api(req, res)
   expect(axios.post).toHaveBeenCalled()
 })
 
 test('should reply welcome on /start', () => {
-  process.env.TELEGRAM_TOKEN = 'foo:bar'
-  axios.post.mockResolvedValue({ response: {} })
-  const req = {
-    query: { token: 'foo:bar' },
-    body: {
-      message: {
-        from: {
-          id: 42, // chat_id (reply to it)
-          language_code: 'en'
-        },
-        text: '/start'
-      }
-    }
-  }
+  axios.post.mockResolvedValue({})
   const res = { json: jest.fn() }
-  const reply = {
-    chat_id: 42,
-    text: 'welcome!'
-  }
+  const reply = { chat_id: 42, text: 'welcome!' }
 
   api(req, res)
   expect(axios.post).toHaveBeenCalledWith('/sendMessage', reply)
 })
 
 test('should reply command not found', () => {
-  process.env.TELEGRAM_TOKEN = 'foo:bar'
   axios.post.mockImplementation(() => jest.fn())
-  const req = {
-    query: { token: 'foo:bar' },
-    body: {
-      message: {
-        text: '/command-not-found'
-      }
-    }
-  }
+  const request = merge({}, req, set({}, 'body.message.text', '/command-not-found'))
   const res = { json: jest.fn() }
 
   expect(() => {
-    api(req, res)
+    api(request, res)
   }).toThrowError(/command not found/)
 })
