@@ -5,6 +5,7 @@
   "author": "@milesibastos",
   "license": "MIT",
   "devDependencies": {
+    "jest": "^25.2.3",
     "now": "^17.1.1"
   }
 }
