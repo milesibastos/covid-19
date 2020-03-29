@@ -1,0 +1,5 @@
+{
+  "env": {
+    "TELEGRAM_TOKEN": "@telegram-token"
+  }
+}
