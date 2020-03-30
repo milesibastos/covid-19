@@ -71,7 +71,7 @@ test('should reply command not found', () => {
 
 test('should reply worldwide statistics on /worldwide', () => {
   axios.post.mockResolvedValue({})
-  repository.mockResolvedValue({ cases: 0, confirmed: 0, deaths: 0, recovered: 42 })
+  repository.worldwide.mockResolvedValue({ cases: 0, confirmed: 0, deaths: 0, recovered: 42 })
   const request = merge({}, req, set({}, 'body.message.text', '/worldwide'))
   const res = { json: jest.fn() }
   const reply = ''
