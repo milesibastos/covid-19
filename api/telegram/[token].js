@@ -1,11 +1,26 @@
 const axios = require('axios').default
+const logger = require('pino')()
+const loggerHttp = require('pino-http')({ logger })
 const get = require('lodash/get')
 const repository = require('../../repository')
 const geocoding = require('../../repository/geocoding')
 
 axios.defaults.baseURL = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/`
+axios.interceptors.request.use(
+  function(config) {
+    // Do something before request is sent
+    logger.info(console)
+    return config
+  },
+  function(error) {
+    // Do something with request error
+    logger.error(error)
+    return Promise.reject(error)
+  }
+)
 
 module.exports = (req, res) => {
+  loggerHttp(req, res)
   const { token, ...query } = req.query
   const from = get(req, 'body.message.from', {})
   const text = get(req, 'body.message.text')
