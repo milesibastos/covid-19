@@ -17,39 +17,59 @@ module.exports = (req, res) => {
   try {
     switch (text) {
       case '/start': {
-        const reply = { chat_id: from.id, text: 'welcome!' }
-        axios.post('/sendMessage', reply).then(({ data }) => res.json({ ...data }))
+        const reply = { chat_id: from.id, text: 'welcome!', reply_markup: welcome }
+        axios
+          .post('/sendSticker', { ...sticker, chat_id: from.id }) //.then(({ data }) => res.json({ ...data }))
+          .then(() => axios.post('/sendMessage', reply).then(({ data }) => res.json({ ...data })))
+          .catch(error => res.json({ error }))
+
         break
       }
-      case '/worldwide': {
+      case '/worldwide':
+      case 'Worldwide Statistics': {
         repository.worldwide().then(statistics => {
           const text = template(locale, statistics)
           // console.log(text)
           const reply = { chat_id: from.id, text }
-          axios.post('/sendMessage', reply).then(({ data }) => res.json({ ...data }))
+          axios
+            .post('/sendMessage', reply)
+            .then(({ data }) => res.json({ ...data }))
+            .catch(error => res.json({ error }))
         })
         break
       }
       default: {
         if (text && text.startsWith('/')) {
           const reply = { chat_id: from.id, text: 'command not supported!' }
-          return axios.post('/sendMessage', reply).then(({ data }) => res.json({ ...data }))
+          return axios
+            .post('/sendMessage', reply)
+            .then(({ data }) => res.json({ ...data }))
+            .catch(error => res.json({ error }))
         }
         if (location) {
           return geocoding(location.latitude, location.longitude)
             .then(({ country, locality }) => {
-              repository.country(country.long_name).then(statistics => {
-                const text = `${country.long_name}\n${template(locale, statistics)}`
-                console.log(text)
-                const reply = { chat_id: from.id, text }
-                axios.post('/sendMessage', reply).then(({ data }) => res.json({ ...data }))
-              })
-              repository.locality(locality.short_name).then(statistics => {
-                const text = `${locality.long_name}\n${template(locale, statistics)}`
-                console.log(text)
-                const reply = { chat_id: from.id, text }
-                axios.post('/sendMessage', reply).then(({ data }) => res.json({ ...data }))
-              })
+              repository
+                .country(country.long_name)
+                .then(statistics => {
+                  const text = `${country.long_name}\n${template(locale, statistics)}`
+                  console.log(text)
+                  const reply = { chat_id: from.id, text }
+                  axios
+                    .post('/sendMessage', reply)
+                    .then(({ data }) => res.json({ ...data }))
+                    .catch(error => res.json({ error }))
+                })
+                .catch(error => res.json({ error }))
+              repository
+                .locality(locality.short_name)
+                .then(statistics => {
+                  const text = `${locality.long_name}\n${template(locale, statistics)}`
+                  console.log(text)
+                  const reply = { chat_id: from.id, text }
+                  axios.post('/sendMessage', reply).then(({ data }) => res.json({ ...data }))
+                })
+                .catch(error => res.json({ error }))
             })
             .catch(error => res.json({ error }))
         }
@@ -62,6 +82,26 @@ module.exports = (req, res) => {
   } catch (error) {
     res.json({ error })
   }
+}
+
+const sticker = {
+  sticker: 'CAACAgIAAxkBAANvXoIVU0H0D9p26ksAAeGsUiC1gRV6AAJaAAPANk8TC_wPT9xGGeEYBA'
+}
+
+const welcome = {
+  keyboard: [
+    [
+      {
+        text: 'Worldwide Statistics'
+      }
+    ],
+    [
+      {
+        text: 'Local Statistics',
+        request_location: true
+      }
+    ]
+  ]
 }
 
 const template = (locale, { cases, confirmed, deaths, recovered }) => `

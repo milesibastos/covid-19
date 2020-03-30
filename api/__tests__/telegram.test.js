@@ -52,10 +52,13 @@ test('token should be valid', () => {
 test('should reply welcome on /start', () => {
   axios.post.mockResolvedValue({})
   const res = { json: jest.fn() }
-  const reply = { chat_id: 42, text: 'welcome!' }
+  const reply = {
+    chat_id: 42,
+    sticker: 'CAACAgIAAxkBAANvXoIVU0H0D9p26ksAAeGsUiC1gRV6AAJaAAPANk8TC_wPT9xGGeEYBA'
+  }
 
   api(req, res)
-  expect(axios.post).toHaveBeenCalledWith('/sendMessage', reply)
+  expect(axios.post).toHaveBeenCalledWith('/sendSticker', reply)
 })
 
 test('should reply command not found', () => {
