@@ -2,8 +2,10 @@ const axios = require('axios').default
 const merge = require('lodash/merge')
 const set = require('lodash/set')
 const api = require('../telegram/[token]')
+const repository = require('../../repository')
 
 jest.mock('axios')
+jest.mock('../../repository')
 
 const req = {
   query: { token: 'foo:bar' },
@@ -19,7 +21,7 @@ const req = {
 }
 
 beforeEach(() => {
-  jest.restoreAllMocks()
+  jest.resetAllMocks()
   process.env.TELEGRAM_TOKEN = 'foo:bar'
 })
 
@@ -57,11 +59,23 @@ test('should reply welcome on /start', () => {
 })
 
 test('should reply command not found', () => {
-  axios.post.mockImplementation(() => jest.fn())
+  axios.post.mockResolvedValue({})
   const request = merge({}, req, set({}, 'body.message.text', '/command-not-found'))
+  const text = 'command not supported!'
+  const reply = { chat_id: 42, text }
   const res = { json: jest.fn() }
 
-  expect(() => {
-    api(request, res)
-  }).toThrowError(/command not found/)
+  api(request, res)
+  expect(axios.post).toHaveBeenCalledWith('/sendMessage', reply)
+})
+
+test('should reply worldwide statistics on /worldwide', () => {
+  axios.post.mockResolvedValue({})
+  repository.mockResolvedValue({ cases: 0, confirmed: 0, deaths: 0, recovered: 42 })
+  const request = merge({}, req, set({}, 'body.message.text', '/worldwide'))
+  const res = { json: jest.fn() }
+  const reply = ''
+
+  api(request, res)
+  // expect(axios.post).toHaveBeenCalledWith('/sendMessage', reply)
 })
