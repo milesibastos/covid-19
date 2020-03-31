@@ -1,0 +1,2 @@
+greeting: <b>Hello ${uppercase(from.first_name)}!</b>
+help: Send me your location
