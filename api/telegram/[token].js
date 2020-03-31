@@ -9,8 +9,22 @@ const loggerHttp = require("pino-http")({ logger });
 
 const repository = require("../../repository");
 const geocoding = require("../../repository/geocoding");
+const firestoreSession = require("../../session-firestore");
+const { Firestore } = require("@google-cloud/firestore");
+
+function fromB64(string) {
+  return Buffer.from(string, "base64").toString();
+}
+const GCLOUD_CREDENTIALS = fromB64(process.env.GCLOUD_CREDENTIALS);
+const credentials = JSON.parse(GCLOUD_CREDENTIALS);
+
+const db = new Firestore({
+  projectId: credentials.project_id,
+  credentials,
+});
 
 const i18n = new TelegrafI18n({
+  useSession: true,
   defaultLanguage: "en",
   defaultLanguageOnMissing: true,
   directory: path.resolve(__dirname, "locales"),
@@ -21,6 +35,7 @@ const i18n = new TelegrafI18n({
 });
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+bot.use(firestoreSession(db.collection("sessions")));
 bot.use(i18n.middleware());
 bot.use((ctx, next) => {
   logger.info(ctx.message);
@@ -29,6 +44,12 @@ bot.use((ctx, next) => {
 
 bot.catch((err, ctx) => {
   logger.error(`Ooops, encountered an error for ${ctx.updateType}`, err);
+});
+
+bot.on("text", (ctx, next) => {
+  ctx.session.counter = ctx.session.counter || 0;
+  ctx.session.counter++;
+  return next();
 });
 
 bot.start(({ i18n, replyWithHTML }) =>
