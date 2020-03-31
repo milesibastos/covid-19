@@ -1,45 +1,49 @@
-const axios = require('axios').default
+const axios = require("axios").default;
 
 // Add a response interceptor
 axios.interceptors.response.use(
-  function(response) {
+  function (response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
-    console.log(response.data)
-    return response
+    console.log(response.data);
+    return response;
   },
-  function(error) {
+  function (error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
 const resources = {
   worldwide: () => {
-    const response = { cases: 0, confirmed: 0, deaths: 0, recovered: 0 }
+    const response = { cases: 0, confirmed: 0, deaths: 0, recovered: 0 };
     const reducer = (accumulator, currentValue) => {
-      accumulator.cases += currentValue.cases
-      accumulator.confirmed += currentValue.confirmed
-      accumulator.deaths += currentValue.deaths
-      accumulator.recovered += currentValue.recovered
+      accumulator.cases += currentValue.cases;
+      accumulator.confirmed += currentValue.confirmed;
+      accumulator.deaths += currentValue.deaths;
+      accumulator.recovered += currentValue.recovered;
 
-      return accumulator
-    }
+      return accumulator;
+    };
     return axios
-      .get('https://covid19-brazil-api.now.sh/api/report/v1/countries')
-      .then(({ data: { data } }) => data.reduce(reducer, response))
+      .get("https://covid19-brazil-api.now.sh/api/report/v1/countries")
+      .then(({ data: { data } }) => data.reduce(reducer, response));
   },
-  country: name => {
+  country: (name) => {
     return axios
-      .get(`https://covid19-brazil-api.now.sh/api/report/v1/${name.toLowerCase()}`)
-      .then(({ data: { data } }) => data)
+      .get(
+        `https://covid19-brazil-api.now.sh/api/report/v1/${name.toLowerCase()}`
+      )
+      .then(({ data: { data } }) => data);
   },
-  locality: name => {
+  locality: (name) => {
     return axios
-      .get(`https://covid19-brazil-api.now.sh/api/report/v1/brazil/uf/${name.toLowerCase()}`)
-      .then(({ data }) => data)
-  }
-}
+      .get(
+        `https://covid19-brazil-api.now.sh/api/report/v1/brazil/uf/${name.toLowerCase()}`
+      )
+      .then(({ data }) => data);
+  },
+};
 
-module.exports = resources
+module.exports = resources;
