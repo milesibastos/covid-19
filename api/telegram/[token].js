@@ -23,7 +23,7 @@ const db = new Firestore({
   credentials,
 });
 
-const i18n = new TelegrafI18n({
+const I18n = new TelegrafI18n({
   useSession: true,
   defaultLanguage: "en",
   defaultLanguageOnMissing: true,
@@ -36,33 +36,80 @@ const i18n = new TelegrafI18n({
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 bot.use(firestoreSession(db.collection("sessions")));
-bot.use(i18n.middleware());
-bot.use((ctx, next) => {
-  logger.info(ctx.message);
-  return next();
-});
+bot.use(I18n.middleware());
+// bot.use(Telegraf.log());
+// bot.use((ctx, next) => {
+//   logger.info(ctx.message);
+//   return next();
+// });
 
 bot.catch((err, ctx) => {
   logger.error(`Ooops, encountered an error for ${ctx.updateType}`, err);
 });
 
-bot.on("text", (ctx, next) => {
-  ctx.session.counter = ctx.session.counter || 0;
-  ctx.session.counter++;
-  return next();
+bot.start(({ i18n, reply }) =>
+  reply(
+    i18n.t("greeting"),
+    Extra.markdown().markup((markup) =>
+      markup.inlineKeyboard(
+        [
+          markup.callbackButton("English", "en"),
+          markup.callbackButton("Português", "pt"),
+          markup.callbackButton(i18n.t("worldwide"), "worldwide"),
+        ],
+        { columns: 2 }
+      )
+    )
+  )
+);
+
+bot.action("en", (ctx) => {
+  ctx.i18n.locale("en");
+  return ctx.editMessageText(
+    ctx.i18n.t("greeting"),
+    Extra.HTML().markup((markup) =>
+      markup.inlineKeyboard(
+        [
+          markup.callbackButton("English", "en"),
+          markup.callbackButton("Português", "pt"),
+          markup.callbackButton(ctx.i18n.t("worldwide"), "worldwide"),
+        ],
+        { columns: 2 }
+      )
+    )
+  );
 });
 
-bot.start(({ i18n, replyWithHTML }) =>
-  replyWithHTML(
-    i18n.t("greeting"),
-    Extra.markup((markup) => {
-      return markup
-        .resize()
-        .keyboard([
-          i18n.t("worldwide"),
-          markup.locationRequestButton(i18n.t("local")),
-        ]);
-    })
+bot.action("pt", (ctx) => {
+  ctx.i18n.locale("pt");
+  return ctx.editMessageText(
+    ctx.i18n.t("greeting"),
+    Extra.HTML().markup((markup) =>
+      markup.inlineKeyboard(
+        [
+          markup.callbackButton("English", "en"),
+          markup.callbackButton("Português", "pt"),
+          markup.callbackButton(ctx.i18n.t("worldwide"), "worldwide"),
+        ],
+        { columns: 2 }
+      )
+    )
+  );
+});
+
+bot.action("worldwide", ({ i18n, reply }) =>
+  repository.worldwide().then((statistics) =>
+    reply(
+      i18n.t("statistics", { locale: i18n.locale(), ...statistics }),
+      Extra.markup((markup) => {
+        return markup
+          .resize()
+          .keyboard([
+            i18n.t("worldwide"),
+            markup.locationRequestButton(i18n.t("local")),
+          ]);
+      })
+    )
   )
 );
 

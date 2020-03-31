@@ -1,4 +1,9 @@
-greeting: <b>Hello ${uppercase(from.first_name)}!</b>
+greeting: |
+  Hey ${uppercase(from.first_name)}!
+  
+  I was trained to send you updated statistics about the cases of COVID-19 whenever you need them.
+
+  So to getting started you may touch the button below or send me your location to receive detailed statistics nearby.
 help: Send me your location
 worldwide: Worldwide Statistics
 local: Local Statistics

@@ -1,0 +1,14 @@
+greeting: | 
+  Olá ${uppercase(from.first_name)}!
+  
+  Eu fui treinado para enviar estatísticas atualizadas sobre os casos de COVID-19 sempre que vocês precisar.
+
+  Então, pra começar, toque no botão aqui em baixo ou me envie a sua localização para receber statísticas detalhadas da sua região.
+help: Envie a sua localização
+worldwide: Estatística Mundial
+local: Estatísticas Locais
+statistics: |
+  Casos: ${new Intl.NumberFormat(locale).format(cases)}
+  Confirmados: ${confirmed ? new Intl.NumberFormat(locale).format(confirmed) : '-'}
+  Mortes: ${new Intl.NumberFormat(locale).format(deaths)}
+  Recuperados: ${recovered ? new Intl.NumberFormat(locale).format(recovered) : '-'}
