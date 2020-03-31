@@ -7,6 +7,8 @@ const path = require("path");
 const logger = require("pino")();
 const loggerHttp = require("pino-http")({ logger });
 
+const repository = require("../../repository");
+
 const i18n = new TelegrafI18n({
   defaultLanguage: "en",
   defaultLanguageOnMissing: true,
@@ -36,6 +38,14 @@ bot.start(({ i18n, replyWithHTML }) =>
 );
 
 bot.help(TelegrafI18n.reply("help", Extra.HTML()));
+
+bot.hears(TelegrafI18n.match("worldwide"), ({ i18n, reply }) =>
+  repository
+    .worldwide()
+    .then((statistics) =>
+      reply(i18n.t("statistics", { locale: i18n.locale(), ...statistics }))
+    )
+);
 
 bot.on("text", (ctx) => ctx.reply(ctx.message.text));
 
