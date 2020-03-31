@@ -4,6 +4,6 @@ worldwide: Worldwide Statistics
 local: Local Statistics
 statistics: |
   Cases: ${new Intl.NumberFormat(locale).format(cases)}
-  Confirmed: ${new Intl.NumberFormat(locale).format(confirmed)}
+  Confirmed: ${confirmed ? new Intl.NumberFormat(locale).format(confirmed) : '-'}
   Deaths: ${new Intl.NumberFormat(locale).format(deaths)}
-  Recovered: ${new Intl.NumberFormat(locale).format(recovered)}
+  Recovered: ${recovered ? new Intl.NumberFormat(locale).format(recovered) : '-'}
