@@ -18,6 +18,7 @@
     "prettier": "^2.0.2"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^3.7.2",
     "axios": "^0.19.2",
     "lodash": "^4.17.15",
     "pino": "^6.0.0",
