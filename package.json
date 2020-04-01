@@ -21,6 +21,7 @@
   "dependencies": {
     "@google-cloud/firestore": "^3.7.2",
     "axios": "^0.19.2",
+    "csv-parse": "^4.8.8",
     "lodash": "^4.17.15",
     "pino": "^6.0.0",
     "pino-http": "^4.4.0",

@@ -126,20 +126,30 @@ bot.hears(TelegrafI18n.match("worldwide"), ({ i18n, reply }) =>
 bot.on("text", (ctx) => ctx.reply(ctx.message.text));
 bot.on("location", ({ i18n, message: { location }, reply }) =>
   geocoding(location.latitude, location.longitude).then(
-    ({ country, locality }) =>
-      repository.country(country.long_name).then((countryStatistics) =>
-        repository.locality(locality.short_name).then((statistics) => {
-          const msg = `${country.long_name}\n${i18n.t("statistics", {
-            locale: i18n.locale(),
-            ...countryStatistics,
-          })}\n${locality.long_name}\n${i18n.t("statistics", {
-            locale: i18n.locale(),
-            ...cases,
-            ...statistics,
-          })}`;
-          return reply(msg);
-        })
-      )
+    ({ country, locality }) => {
+      logger.info(country, locality);
+      return repository.country(country.long_name).then((countryStatistics) => {
+        logger.info(countryStatistics);
+        const countryMsg = `${country.long_name}\n${i18n.t("statistics", {
+          locale: i18n.locale(),
+          ...countryStatistics,
+        })}`;
+        return repository
+          .state(country, locality)
+          .then((statistics) => {
+            const msg = `${countryMsg}\n${locality.long_name}\n${i18n.t(
+              "statistics",
+              {
+                locale: i18n.locale(),
+                ...cases,
+                ...statistics,
+              }
+            )}`;
+            return reply(msg);
+          })
+          .catch(() => reply(countryMsg));
+      });
+    }
   )
 );
 
