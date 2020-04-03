@@ -6,6 +6,7 @@ const Extra = require("telegraf/extra");
 const path = require("path");
 const logger = require("pino")();
 const loggerHttp = require("pino-http")({ logger });
+const get = require("lodash/get");
 
 const repository = require("../../repository");
 const geocoding = require("../../repository/geocoding");
@@ -123,35 +124,37 @@ bot.hears(TelegrafI18n.match("worldwide"), ({ i18n, reply }) =>
     )
 );
 
-bot.on("text", (ctx) => ctx.reply(ctx.message.text));
+// bot.on("text", (ctx) => ctx.reply(ctx.message.text));
 bot.on("location", ({ i18n, message: { location }, reply }) =>
-  geocoding(location.latitude, location.longitude).then(
-    ({ country, locality }) => {
-      logger.info(country, locality);
-      return repository.country(country.long_name).then((countryStatistics) => {
-        logger.info(countryStatistics);
-        const countryMsg = `${country.long_name}\n${i18n.t("statistics", {
-          locale: i18n.locale(),
-          ...countryStatistics,
-        })}`;
-        return repository
-          .state(country, locality)
-          .then((statistics) => {
-            const msg = `${countryMsg}\n${locality.long_name}\n${i18n.t(
-              "statistics",
-              {
-                locale: i18n.locale(),
-                ...cases,
-                ...statistics,
-              }
-            )}`;
-            return reply(msg);
-          })
-          .catch(() => reply(countryMsg));
-      });
-    }
-  )
+  getLocalizedStatistics(location, i18n, reply)
 );
+
+bot.on("text", async ({ i18n, reply, message }) => {
+  const axios = require("axios").default;
+  const url = `https://api.wit.ai/message?v=20200403&q=${message.text}`;
+  return axios
+    .get(url, {
+      headers: {
+        Authorization: `Bearer ${process.env.WIT_TOKEN}`,
+        Accept: "application/json",
+      },
+    })
+    .then((response) => {
+      // logger.info(response.data);
+      const coords = get(
+        response.data,
+        "entities.location[0].resolved.values[0].coords"
+      );
+      if (!coords) return reply(message.text);
+      return getLocalizedStatistics(
+        { latitude: coords.lat, longitude: coords.long },
+        i18n,
+        reply
+      );
+    })
+    .catch((error) => logger.error(error));
+  // return reply(ctx.message.text);
+});
 
 module.exports = async (req, res) => {
   loggerHttp(req, res);
@@ -164,3 +167,30 @@ module.exports = async (req, res) => {
 };
 
 const cases = { cases: 0, confirmed: 0, deaths: 0, recovered: 0 };
+
+function getLocalizedStatistics({ latitude, longitude }, i18n, reply) {
+  return geocoding(latitude, longitude).then(({ country, locality }) => {
+    // logger.info(country, locality);
+    return repository.country(country.long_name).then((countryStatistics) => {
+      // logger.info(countryStatistics);
+      const countryMsg = `${country.long_name}\n${i18n.t("statistics", {
+        locale: i18n.locale(),
+        ...countryStatistics,
+      })}`;
+      return repository
+        .state(country, locality)
+        .then((statistics) => {
+          const msg = `${countryMsg}\n${locality.long_name}\n${i18n.t(
+            "statistics",
+            {
+              locale: i18n.locale(),
+              ...cases,
+              ...statistics,
+            }
+          )}`;
+          return reply(msg);
+        })
+        .catch(() => reply(countryMsg));
+    });
+  });
+}
