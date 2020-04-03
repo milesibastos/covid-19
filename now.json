@@ -2,6 +2,7 @@
   "env": {
     "TELEGRAM_TOKEN": "@telegram-token",
     "TELEGRAM_BOT_TOKEN": "@telegram-bot-token",
-    "GEOCODING_API_KEY": "@geocoding-api-key"
+    "GEOCODING_API_KEY": "@geocoding-api-key",
+    "WIT_TOKEN": "@wit-token"
   }
 }
