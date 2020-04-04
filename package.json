@@ -5,6 +5,9 @@
   "author": "@milesibastos",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
+    "babel-jest": "^25.2.6",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-config-standard": "^14.1.1",
@@ -16,7 +19,9 @@
     "jest": "^25.2.3",
     "now": "^17.1.1",
     "pino-pretty": "^3.6.1",
-    "prettier": "^2.0.2"
+    "prettier": "^2.0.2",
+    "supertest": "^4.0.2",
+    "zeit-now-node-server": "^1.0.1"
   },
   "dependencies": {
     "@google-cloud/firestore": "^3.7.2",
