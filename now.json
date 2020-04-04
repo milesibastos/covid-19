@@ -1,5 +1,4 @@
 {
-  "name": "COVID-19",
   "public": true,
   "env": {
     "TELEGRAM_TOKEN": "@telegram-token",
