@@ -1,8 +1,15 @@
 {
+  "name": "COVID-19",
+  "public": true,
   "env": {
     "TELEGRAM_TOKEN": "@telegram-token",
     "TELEGRAM_BOT_TOKEN": "@telegram-bot-token",
     "GEOCODING_API_KEY": "@geocoding-api-key",
     "WIT_TOKEN": "@wit-token"
-  }
+  },
+  "builds": [{ "src": "src/api/**/index.js", "use": "@now/node" }],
+  "routes": [
+    { "src": "/api/ping", "dest": "src/api/ping.js" },
+    { "src": "/api/telegram/(?<token>[^/]*)", "dest": "src/api/telegram/index.js?token=$token" }
+  ]
 }
